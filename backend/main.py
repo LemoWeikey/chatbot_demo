@@ -13,7 +13,8 @@ app = FastAPI(title="RAG Chatbot API")
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://sunny-tulumba-bb8a69.netlify.app",  # Netlify frontend
+    allow_origins=["http://localhost:3000", 
+                   "https://sunny-tulumba-bb8a69.netlify.app",  # Netlify frontend
 ],  # React dev server
     
     allow_credentials=True,

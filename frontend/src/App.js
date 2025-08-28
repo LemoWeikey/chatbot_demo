@@ -4,7 +4,7 @@ import './App.css';
 
 // ✅ Update API URL configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://chatbotdemo-production.up.railway.app/'  // change to your deployed backend URL
+  ? 'https://chatbotdemo-production.up.railway.app'  // change to your deployed backend URL
   : 'http://localhost:8000';
 
 const App = () => {
