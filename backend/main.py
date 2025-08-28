@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import os
+import asyncio
 from dotenv import load_dotenv
 from rag_system import setup_rag_system, query_rag_system
 
@@ -22,15 +22,24 @@ app.add_middleware(
 class QueryRequest(BaseModel):
     question: str
 
-# Initialize RAG system on startup
+# Global state
 query_engine = None
+rag_ready = False
+
+async def initialize_rag():
+    global query_engine, rag_ready
+    try:
+        print("🚀 Setting up RAG system in background...")
+        query_engine = setup_rag_system()
+        rag_ready = True
+        print("✅ RAG system ready!")
+    except Exception as e:
+        print(f"❌ Failed to initialize RAG system: {e}")
 
 @app.on_event("startup")
 async def startup_event():
-    global query_engine
-    print("🚀 Setting up RAG system...")
-    query_engine = setup_rag_system()
-    print("✅ RAG system ready!")
+    # Spawn async task so startup is non-blocking
+    asyncio.create_task(initialize_rag())
 
 @app.get("/")
 async def root():
@@ -38,16 +47,15 @@ async def root():
 
 @app.post("/api/query")
 async def query_endpoint(request: QueryRequest):
+    if not rag_ready or query_engine is None:
+        raise HTTPException(status_code=503, detail="RAG system still initializing, try again later.")
+    
     try:
-        if query_engine is None:
-            raise HTTPException(status_code=500, detail="RAG system not initialized")
-        
         response = query_rag_system(query_engine, request.question)
         return {"response": response}
-    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "rag_initialized": query_engine is not None}
+    return {"status": "healthy", "rag_initialized": rag_ready}
