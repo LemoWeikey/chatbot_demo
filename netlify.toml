@@ -1,0 +1,23 @@
+[build]
+  publish = "frontend/build"
+  command = "cd frontend && npm install && npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-backend-url.vercel.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[dev]
+  command = "cd frontend && npm start"
+  port = 3000
+  publish = "frontend/build"
